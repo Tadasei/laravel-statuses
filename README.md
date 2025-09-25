@@ -28,37 +28,14 @@ php artisan statuses:install
 ### Configuring Statusable Models
 
 To extend or define which models are considered *statusable*:
-* Add the following relationship definition to your model:
-    ```php
-    use Illuminate\Database\Eloquent\Relations\MorphToMany;
-
-    /**
-     * Get all of the statuses for your model.
-     */
-    public function statuses(): MorphToMany
-    {
-        return $this->morphToMany(Status::class, 'statusable')->using(Statusable::class)->withTimestamps();
-    }
-    ```
-* Add the following relationship definition to `App\Models\Status`:
-    ```php
-    use Illuminate\Database\Eloquent\Relations\MorphToMany;
-
-    /**
-     * Get all of your models that are assigned this status.
-     */
-    public function yourModels(): MorphToMany
-    {
-        return $this->morphedByMany(YourModel::class, 'statusable')->using(Statusable::class)->withTimestamps();
-    }
-    ```
+* Define a One-to-Many relationship with your model (one `App\Models\Status` has many `App\Models\YourModel`).
 * Add your model class name to the `App\Enums\StatusableType` enum.
 
 This allows full flexibility in defining how your application links statuses to models.
 
 ### Running migrations
 
-To create the related `statuses` and `statusables` tables, run the generated migrations using the following command:
+To create the related `statuses` table, run the generated migration using the following command:
 
 ```bash
 php artisan migrate
@@ -75,6 +52,8 @@ require __DIR__ . "/resources/status.php";
 
 ## Usage:
 
+The usage is the same as any regular One-to-Many relationship:
+
 ```php
 use App\Models\{Status, User};
 
@@ -88,11 +67,7 @@ $status = Status::create([
 
 $user = User::first();
 
-$user->statuses()->attach($status);
-
-$user->statuses()->detach($status);
-
-$user->statuses()->sync([$status->id]);
+$status->users()->save($user);
 ```
 
 ## Customization
