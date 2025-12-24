@@ -36,7 +36,7 @@ class StatusController extends Controller
 		Gate::authorize("viewAny", Status::class);
 
 		return response()->json([
-			"statuses" => Status::latest()->paginate(5),
+			"statuses" => Status::orderByDesc("id")->paginate(5),
 		]);
 	}
 
@@ -47,7 +47,9 @@ class StatusController extends Controller
 	{
 		Gate::authorize("store", [Status::class, $request->validated()]);
 
-		$status = DB::transaction(fn() => Status::create($request->validated()));
+		$status = DB::transaction(
+			fn() => Status::create($request->validated())
+		);
 
 		return response()->json(["id" => $status->id], 201);
 	}
@@ -67,8 +69,10 @@ class StatusController extends Controller
 	/**
 	 * Update the specified resource in storage.
 	 */
-	public function update(UpdateStatusRequest $request, Status $status): Response
-	{
+	public function update(
+		UpdateStatusRequest $request,
+		Status $status
+	): Response {
 		Gate::authorize("update", [$status, $request->validated()]);
 
 		DB::transaction(fn() => $status->update($request->validated()));
@@ -85,7 +89,9 @@ class StatusController extends Controller
 			->get()
 			->each(fn(Status $status) => Gate::authorize("delete", $status));
 
-		DB::transaction(fn() => Status::whereIn("id", $request->statuses)->delete());
+		DB::transaction(
+			fn() => Status::whereIn("id", $request->statuses)->delete()
+		);
 
 		return response()->noContent();
 	}
